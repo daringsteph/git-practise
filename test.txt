@@ -1,3 +1,6 @@
 Hi, here is a quick test of Atom and Git.
 Let's see how it goes.
 I am creating a new text file and then committing it to Git, before pushing it to my repository.
+
+I have now created the text file and now in my second edit, to test the recommit.
+      
