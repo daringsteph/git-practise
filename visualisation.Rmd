@@ -1,0 +1,178 @@
+---
+title: "Visualisation of food choices dataset to analyse Parent's profession against childhood food choices"
+Aim: "To visualise the actual weights versus the perception weight against their favourite food cuisines to have a feel of which cuisine appears to be healthiest"
+Objective: "CAn we improve your annuity products based on your life style (food choices and exercise)"
+output: html_notebook
+---
+
+```{r}
+#get libraries
+
+library(ggplot2)
+library(plyr)
+```
+
+
+```{r}
+#set working directory
+
+setwd("C:/Users/Decoded/Documents/visualisation")
+
+
+```
+
+```{r}
+#import csv file
+food_file <- read.csv("food_coded.csv")
+```
+
+
+```{r}
+#explore dataset
+
+head(food_file)
+
+```
+
+```{r}
+#view file
+
+View(food_file)
+```
+```{r}
+# subset dataset by selecting variables fav cuisine, weight, percieved weight
+myvars <- c("fav_cuisine_coded", "weight", "self_perception_weight")
+food <- food_file[myvars]
+```
+
+```{r}
+#explore food dataset
+
+summary(food$weight)
+```
+
+```{r}
+#clean food; weight = num; fav cuisine = factor
+
+#a foodweight revalue
+food$weight <- revalue(food$weight, c("144 lbs" = "144"))
+
+food$weight <- revalue(food$weight, c("Not sure, 240" = "240"))
+
+food$weight <- revalue(food$weight, c("I'm not answering this. " = "2"))
+food$weight <- revalue(food$weight, c("nan" = "2"))
+
+summary(food$weight)
+```
+```{r}
+#fav cuisine conversion
+food$fav_cuisine_coded <- as.factor(food$fav_cuisine_coded)
+```
+
+```{r}
+#weight conversion to numeric
+
+food$weight <- as.numeric(food$weight)
+
+```
+```{r}
+# plot your graphs
+
+plot(food$self_perception_weight, food$weight)
+#abline(lm(food$self_perception_weight~food$weight), col="red")
+```
+```{r}
+# set up the plot 
+ggplot(food,aes(x=food$self_perception_weight,y=food$weight, color = food$fav_cuisine_coded)) + geom_point()
+```
+
+```{r}
+ggplot(food,aes(x=self_perception_weight,y=weight, color = fav_cuisine_coded)) + geom_point() + facet_wrap(~fav_cuisine_coded)
+```
+
+```{r}
+# we only need to focus on levels 1, 2, 3, & 5 of fav_cuisine as the others don't give us enough information from the above visualisation
+
+#food_new   <- revalue(food$fav_cuisine_coded, c("0" = NULL))
+
+food$fav_cuisine_coded <- revalue(food$fav_cuisine_coded, c("0" = NULL))
+summary(food$fav_cuisine_coded)
+
+
+```
+```{r}
+summary(food_new$fav_cuisine_coded)
+```
+
+```{r}
+newdata <- food[ which(food$fav_cuisine_coded== '1'| food$fav_cuisine_coded== '2'| food$fav_cuisine_coded== '4'| food$fav_cuisine_coded== '5' ),]
+newdata$fav_cuisine_coded <- droplevels(newdata$fav_cuisine_coded)
+
+summary(newdata$fav_cuisine_coded)
+```
+
+
+```{r}
+ggplot(newdata,aes(x=self_perception_weight,y=weight, color = fav_cuisine_coded)) + geom_point() + facet_wrap(~fav_cuisine_coded)
+```
+```{r}
+# now this looks better. we now need to label the cuisines
+
+
+levels(newdata$fav_cuisine_coded) <- c("Italian/French/greek", "Spanish/mexican", "Asian/Chinese/Thai/Nepal", "American" )
+```
+
+
+
+```{r}
+ggplot(newdata,aes(x=self_perception_weight,y=weight, color = fav_cuisine_coded)) + geom_point() + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded) 
+```
+
+```{r}
+# create a new variable to label the percieved weight codes
+
+newdata2 <- newdata
+
+newdata2$self_perception <- "Slim"
+
+newdata2$self_perception[newdata2$self_perception_weight == 2] <- "Very Fit"
+
+newdata2$self_perception[newdata2$self_perception_weight == 3] <- "Perfect"
+
+newdata2$self_perception[newdata2$self_perception_weight == 4] <- "Slightly Fat"
+
+newdata2$self_perception[newdata2$self_perception_weight == 5] <- "Fat"
+
+newdata2$self_perception[newdata2$self_perception_weight == 6] <- "I'm Special"
+
+```
+```{r}
+#now replot
+
+levels(newdata2$fav_cuisine_coded) <- c("Italian/French/greek", "Spanish/mexican", "Asian/Chinese/Thai/Nepal", "American" )
+```
+
+```{r}
+#reorder the perceptions
+
+newdata2$self_perception_weight2 <- as.factor(newdata2$self_perception)
+
+newdata2$self_perception <- factor(newdata2$self_perception_weight2, levels=c("Slim","Very Fit","Perfect","Slightly Fat","Fat","I'm Special"))
+```
+
+
+```{r}
+#ggplot(newdata2,aes(x=self_perception,y=weight, color = fav_cuisine_coded)) + geom_point() + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded) 
+
+ggplot(newdata2,aes(x=self_perception,y=weight, color = fav_cuisine_coded)) + geom_point() + theme(axis.text.x = element_text(angle=90,hjust=1)) + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded)
+
+```
+
+
+```{r}
+#change plot titles
+
+p + ggtitle("Visualisation of Percieved Weight V Actual Weight based on Favourite Cuisines") +
+  xlab("Percieved Weight") + ylab("Actual Weight (kg)")
+```
+
