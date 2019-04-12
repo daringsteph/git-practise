@@ -1,7 +1,7 @@
 ---
 title: "Visualisation of food choices dataset to analyse Parent's profession against childhood food choices"
 Aim: "To visualise the actual weights versus the perception weight against their favourite food cuisines to have a feel of which cuisine appears to be healthiest"
-Objective: "CAn we improve your annuity products based on your life style (food choices and exercise)"
+Objective: "Can we improve your annuity products based on your life style (food choices and exercise)"
 output: html_notebook
 ---
 
@@ -164,15 +164,15 @@ newdata2$self_perception <- factor(newdata2$self_perception_weight2, levels=c("S
 ```{r}
 #ggplot(newdata2,aes(x=self_perception,y=weight, color = fav_cuisine_coded)) + geom_point() + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded) 
 
-ggplot(newdata2,aes(x=self_perception,y=weight, color = fav_cuisine_coded)) + geom_point() + theme(axis.text.x = element_text(angle=90,hjust=1)) + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded)
+ggplot(newdata2,aes(x=self_perception,y=weight, color = fav_cuisine_coded)) + geom_point() + theme(axis.text.x = element_text(angle=90,hjust=1)) + facet_grid(newdata$fav_cuisine_coded ~.) + facet_wrap(~fav_cuisine_coded) +
+   ggtitle("Percieved Weight V Actual Weight using
+                    Favourite Cuisines") +
+  xlab("Percieved Weight") + ylab("Actual Weight (kg)")
 
 ```
-
-
 ```{r}
-#change plot titles
+#Summary: It appears that people who eat Spanish/Mexican and American foods self identify as being very attractive.
+#Asian and Chinese food lovers appear to be more realistic though; while the American food lovers appear to be in self denial in my opinion
 
-p + ggtitle("Visualisation of Percieved Weight V Actual Weight based on Favourite Cuisines") +
-  xlab("Percieved Weight") + ylab("Actual Weight (kg)")
 ```
 
