@@ -233,12 +233,12 @@ rpart.plot(model_0, type = 5, extra = 2)
 # Let's see if we can improve it!
 # Could you tell what the parameters (control and parms) are controlling?
 model_1 <-  rpart(decision ~ .,
-               method = - - -,
-               data = - - -,
-               control = rpart.control(minsplit = - - -, depth = - - -),
-               parms = list(split = - - -))
+               method = "class",
+               data = train,
+               control = rpart.control(minsplit = 1, depth = 5), #minsplit is how many datapts u can have;  depth is how many splits
+               parms = list(split = "information"))
 
-rpart.plot(model_1, - - -, - - -)
+rpart.plot(model_1, type = 5, extra = 2)
 ```
 
 The current model is a tree build optimising information gain - could you tell why?
@@ -247,12 +247,14 @@ Now it is time to build a Gini impurity model. Which parameter shall we change?
 
 ```{r}
 model_2 <-  rpart(decision ~ .,
-              - - -,
-              - - -,
-              - - -,
-              parms = list(split = - - -))
+               method = "class",
+               data = train,
+               control = rpart.control(minsplit = 1, depth = 3), #minsplit is how many datapts u can have;  depth is how many splits
+               parms = list(split = "gini"))
+
 summary(model_2)
-rpart.plot(model_2, - - -, - - -)
+rpart.plot(model_2, type = 5, extra = 2)
+
 ```
 
 # 6.1. Build multiple classification models
@@ -262,12 +264,13 @@ Now we are going to build different decision trees (optimising gini impurity and
 For the example: I am going to compare the trees with similar parameters except for split. Do you know which algorithm we are using if the parameter split is "information"?
 
 ```{r}
-model_info <-  rpart(- - -,
-                    - - -,
-                    - - -,
-                    - - - = rpart.control(minsplit = 1, maxdepth = 3, cp = 0),
-                    - - - = list(split = - - -))
+model_info <-  rpart(decision ~ .,
+                     method = "class",
+               data = train,
+               control = rpart.control(minsplit = 1, maxdepth = 3, cp = 0), #cp is the complexity parm; 
+               parms = list(split = "information"))
 
+rpart.plot(model_info, type = 5, extra = 2)
 # Now is your turn to change other parameters
 rpart.plot(model_info, type = 5, extra = 2)
 ```
@@ -275,12 +278,11 @@ rpart.plot(model_info, type = 5, extra = 2)
 Let's generate a new model based on gini impurity. For that we need to change a single parameter - which parameter do you think we need to change?
 
 ```{r}
-model_gini <-  rpart(- - -,
-                     - - -,
-                     - - -,
-                     - - -,
-                     parms = list(split = "gini"))
-
+model_gini <-  rpart(decision ~ .,
+                     method = "class",
+               data = train,
+               control = rpart.control(minsplit = 1, maxdepth = 3, cp = 0.05), #cp is the complexity parm; 
+               parms = list(split = "gini"))
 # Now is your turn to change other parameters
 rpart.plot(model_gini, type = 5, extra = 2)
 ```
@@ -300,16 +302,16 @@ rpart.plot(p_model_info, type = 5, extra = 2)
 We now evaluate how well our models are performing. Using our models, we can predict the decision value for the test set, and compare this to the true values. The diagnostics can be nicely summarised in a "confusion matrix". 
 
 ```{r}
-Predict_gini <- predict(- - - = model_gini, - - - = test, - - - = "class")
+Predict_gini <- predict(object = model_gini, newdata = test, type = "class") #build the model on the train set, evaluate using the test set
 
-confusionMatrix(data = - - -, reference = - - -)
+confusionMatrix(data = Predict_gini, reference = test$decision, positive = "yes") #look up the confusion matrix adn read up 
 ```
 
 
 ```{r}
-Predict_info <-  predict(object = - - -, newdata = - - -, type = - - -)
+Predict_info <-  predict(object = model_info, newdata = test, type = "class")
 
-confusion <- confusionMatrix(data = - - -, reference = - - -)
+confusion <- confusionMatrix(data = Predict_info, reference = test$decision, positive = "yes")
 ```
 
 
@@ -322,16 +324,16 @@ So we have a pretty great model working. Finally we can answer our question!
 
 ```{r}
 # the first part is add our predictions to the unlabelled part of the data i.e. the "implement" subset
-implement$prediction <- predict(- - -, - - -, type = "class")
+implement$prediction <- predict(model_gini, implement, type = "class")
 
 # calculate the number of answered yes, predicted yes, and the total yes 
-predict_yes <- length(implement$prediction[- - - == "yes"])
-real_yes <- length(data_labeled$decision[- - - == "yes"])
+predict_yes <- length(implement$prediction[implement$prediction == "yes"])
+real_yes <- length(data_labeled$decision[data_labeled$decision == "yes"])
 
 # let's add these together to calculate the total yes, but first scale the predicted number by the "sensitivity"
 total_yes <- real_yes + as.numeric(confusion$byClass["Sensitivity"])*predict_yes
 
-total_people <- length(- - -)
+total_people <- length(data$age)
 
 total_yes/total_people
 ```
